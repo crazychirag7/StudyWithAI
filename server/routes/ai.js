@@ -15,7 +15,7 @@ const openai = new OpenAI({
 // This is route to generate flashcards for a given topic using AI
 router.post("/flashcards", authMiddleware, async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic, count = 5 } = req.body;
 
     if (!topic) {
       return res.status(400).json({ message: "Topic is required" });
@@ -28,7 +28,7 @@ router.post("/flashcards", authMiddleware, async (req, res) => {
         {
           role: "user",
           content: `
-Generate 5 simple study flashcards about ${topic}.
+Generate ${count} simple study flashcards about ${topic}.
 
 Format EXACTLY like this JSON:
 
@@ -43,7 +43,7 @@ Return ONLY valid JSON.
 `
         }
       ],
-      max_tokens: 500
+      max_tokens: count * 150
     });
 
     const text = completion.choices[0].message.content;
@@ -75,7 +75,7 @@ Return ONLY valid JSON.
 // Route to generate a quiz with multiple choice questions
 router.post("/quiz", authMiddleware, async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic, count = 5 } = req.body;
 
     if (!topic) {
       return res.status(400).json({ message: "Topic is required" });
@@ -87,7 +87,7 @@ router.post("/quiz", authMiddleware, async (req, res) => {
         {
           role: "user",
           content: `
-Generate 5 multiple choice quiz questions about ${topic}.
+Generate ${count} multiple choice quiz questions about ${topic}.
 
 Return ONLY valid JSON in this format:
 
@@ -106,7 +106,7 @@ Return ONLY valid JSON in this format:
 `
         }
       ],
-      max_tokens: 700
+      max_tokens: count * 200
     });
 
     const text = completion.choices[0].message.content;

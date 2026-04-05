@@ -131,17 +131,12 @@ header {
   background: white;
 }
 
-#flashcardContent {
-  flex: 1;
-  overflow-y: auto;
-  padding: 40px;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.6;
-  background: #f9fafb;
-  white-space: pre-wrap;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
+.flip-scene { width:100%; flex:1; perspective:1000px; cursor:pointer; padding:20px; box-sizing:border-box; }
+.flip-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.55s cubic-bezier(.4,0,.2,1); }
+.flip-card-inner.flipped { transform:rotateY(180deg); }
+.flip-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; box-sizing:border-box; }
+.flip-front { background:white; border:2px solid #e0e7ff; }
+.flip-back  { background:#f0fdf4; border:2px solid #bbf7d0; transform:rotateY(180deg); }
 
 #cardCounter {
   text-align: center;
@@ -211,7 +206,14 @@ header {
       <h2>Generate Flashcards</h2>
       <p>Create custom flashcards powered by AI to help you study any topic.</p>
       <input id="topicInput" type="text" placeholder="Enter a topic..." />
-      <button id="generateBtn">Generate Flashcards</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:0;">
+        <select id="flashcardCount" style="padding:11px 12px;border-radius:8px;border:1px solid #ddd;font-size:14px;color:#374151;background:white;">
+          <option value="5">5 cards</option>
+          <option value="10" selected>10 cards</option>
+          <option value="15">15 cards</option>
+        </select>
+        <button id="generateBtn" style="flex:1;">Generate Flashcards</button>
+      </div>
     </div>
     <div class="dashboard-logo">
       <img src="/images/hero.png" alt="StudyWithAI Logo" />
@@ -225,13 +227,28 @@ header {
       <h3 style="margin-top:0;">Recently Generated</h3>
       <ul id="recentTopics"></ul>
     </div>
-    <div class="flashcard-box" id="flashcardContainer">
-      <div class="flashcard-card">
-        <div id="flashcardContent">Generate flashcards to begin.</div>
-        <div id="cardCounter"></div>
-        <div id="navButtons" style="display:none;">
-          <button id="prevBtn">⬅ Prev</button>
-          <button id="nextBtn">Next ➡</button>
+    <div class="flashcard-box" id="flashcardContainer" style="display:flex;flex-direction:column;justify-content:center;">
+      <div id="emptyState" style="text-align:center;color:#9ca3af;padding:40px;font-size:15px;">Generate flashcards to begin.</div>
+      <div id="flipWrapper" style="display:none;flex-direction:column;height:100%;">
+        <div class="flip-scene" onclick="toggleFlip()">
+          <div class="flip-card-inner" id="flipCardInner">
+            <div class="flip-face flip-front">
+              <div style="font-size:11px;color:#2563eb;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Question</div>
+              <div id="flipQuestion" style="font-size:17px;font-weight:500;color:#111827;text-align:center;line-height:1.5;"></div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:12px;">tap to flip</div>
+            </div>
+            <div class="flip-face flip-back">
+              <div style="font-size:11px;color:#16a34a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Answer</div>
+              <div id="flipAnswer" style="font-size:17px;font-weight:500;color:#166534;text-align:center;line-height:1.5;"></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0 20px 20px;">
+          <span id="cardCounter" style="font-size:13px;color:#6b7280;"></span>
+          <div style="display:flex;gap:8px;">
+            <button id="prevBtn" style="padding:10px 20px;border-radius:10px;border:1px solid #d1d5db;background:white;cursor:pointer;font-size:13px;color:#374151;">← Prev</button>
+            <button id="nextBtn" style="padding:10px 20px;border-radius:10px;border:none;background:#2563eb;color:white;cursor:pointer;font-size:13px;">Next →</button>
+          </div>
         </div>
       </div>
     </div>
@@ -242,7 +259,14 @@ header {
       <h2>Quiz Yourself</h2>
       <p>Challenge yourself with AI-generated multiple choice quizzes based on any topic you choose.</p>
       <input id="quizTopicInput" type="text" placeholder="Enter a topic..." />
-      <button id="startQuizBtn">Start Quiz</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:0;">
+        <select id="quizCount" style="padding:11px 12px;border-radius:8px;border:1px solid #ddd;font-size:14px;color:#374151;background:white;">
+          <option value="5">5 questions</option>
+          <option value="10" selected>10 questions</option>
+          <option value="15">15 questions</option>
+        </select>
+        <button id="startQuizBtn" style="flex:1;">Start Quiz</button>
+      </div>
     </div>
     <div class="dashboard-logo">
       <img src="/images/hero.png" alt="Quiz Image" />
@@ -282,6 +306,7 @@ header {
   </div>
 
   <!-- Charts row -->
+  <div id="topicFilters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;"></div>
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
 
     <div class="chart-panel">
@@ -307,6 +332,15 @@ header {
     </div>
 
   </div>
+
+  <div class="chart-panel" style="margin-top:16px;">
+    <div class="ctitle">Average score by topic</div>
+    <div class="csub">grouped — updates as you take more quizzes</div>
+    <div style="position:relative;width:100%;height:140px;">
+      <canvas id="quizTopicBar"></canvas>
+    </div>
+  </div>
+
 </div>
 
 
@@ -325,13 +359,10 @@ async function loadFlashcardHistory() {
 
 function logout() { window.location.href = "/login.html"; }
 
-const generateBtn     = document.getElementById("generateBtn");
-const topicInput      = document.getElementById("topicInput");
-const flashcardContent = document.getElementById("flashcardContent");
-const prevBtn         = document.getElementById("prevBtn");
-const nextBtn         = document.getElementById("nextBtn");
-const navButtons      = document.getElementById("navButtons");
-const cardCounter     = document.getElementById("cardCounter");
+const generateBtn      = document.getElementById("generateBtn");
+const topicInput       = document.getElementById("topicInput");
+const prevBtn          = document.getElementById("prevBtn");
+const nextBtn          = document.getElementById("nextBtn");
 const recentTopicsList = document.getElementById("recentTopics");
 
 let flashcards = [], currentIndex = 0, recentTopics = [];
@@ -342,10 +373,9 @@ function renderRecentTopicsFromDB() {
     const li = document.createElement("li");
     li.innerText = item.topic;
     li.addEventListener("click", () => {
-      flashcards = item.cards.map(c => "Question: " + c.question + "\n\nAnswer: " + c.answer);
+      flashcards = item.cards;
       currentIndex = 0;
       showCard(0);
-      navButtons.style.display = "flex";
     });
     const del = document.createElement("span");
     del.innerText = " ❌";
@@ -356,26 +386,33 @@ function renderRecentTopicsFromDB() {
   });
 }
 
-function showCard(index, direction = "right") {
+function showCard(index) {
   if (!flashcards.length) return;
-  flashcardContent.classList.add(direction === "right" ? "flashcard-slide-left" : "flashcard-slide-right");
+  const inner = document.getElementById('flipCardInner');
+  inner.classList.remove('flipped');
   setTimeout(() => {
-    flashcardContent.innerText = flashcards[index];
-    cardCounter.innerText = `Card ${index + 1} of ${flashcards.length}`;
-    flashcardContent.classList.remove("flashcard-slide-left", "flashcard-slide-right");
-  }, 200);
+    document.getElementById('flipQuestion').textContent = flashcards[index].question;
+    document.getElementById('flipAnswer').textContent   = flashcards[index].answer;
+    document.getElementById('cardCounter').textContent  = `Card ${index + 1} of ${flashcards.length}`;
+  }, 100);
+  document.getElementById('emptyState').style.display  = 'none';
+  document.getElementById('flipWrapper').style.display = 'flex';
+}
+
+function toggleFlip() {
+  document.getElementById('flipCardInner').classList.toggle('flipped');
 }
 
 prevBtn.addEventListener("click", () => {
   if (!flashcards.length) return;
   currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
-  showCard(currentIndex, "left");
+  showCard(currentIndex);
 });
 
 nextBtn.addEventListener("click", () => {
   if (!flashcards.length) return;
   currentIndex = (currentIndex + 1) % flashcards.length;
-  showCard(currentIndex, "right");
+  showCard(currentIndex);
 });
 
 generateBtn.addEventListener("click", async () => {
@@ -383,22 +420,18 @@ generateBtn.addEventListener("click", async () => {
   if (!topic) { alert("Please enter a topic"); return; }
   generateBtn.disabled = true;
   generateBtn.innerText = "Generating...";
-  flashcardContent.innerText = "🤖 Generating flashcards...";
-  cardCounter.innerText = "";
-  navButtons.style.display = "none";
   try {
     const res = await fetch("/api/ai/flashcards", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem("token") },
-      body: JSON.stringify({ topic })
+      body: JSON.stringify({ topic, count: parseInt(document.getElementById('flashcardCount').value) })
     });
     const data = await res.json();
     if (res.ok) {
-      flashcards = data.flashcards.map(c => "Question: " + c.question + "\n\nAnswer: " + c.answer);
-      if (flashcards.length > 0) { currentIndex = 0; showCard(0); navButtons.style.display = "flex"; await loadFlashcardHistory(); }
-      else flashcardContent.innerText = "No flashcards generated.";
-    } else { flashcardContent.innerText = "❌ AI Error"; }
-  } catch { flashcardContent.innerText = "❌ Failed to connect to AI."; }
+      flashcards = data.flashcards;
+      if (flashcards.length > 0) { currentIndex = 0; showCard(0); await loadFlashcardHistory(); }
+    } else { console.log("AI Error"); }
+  } catch { console.log("Failed to connect to AI."); }
   generateBtn.disabled = false;
   generateBtn.innerText = "Generate Flashcards";
 });
@@ -411,7 +444,8 @@ async function deleteFlashcard(id) {
 document.getElementById("startQuizBtn").addEventListener("click", () => {
   const topic = document.getElementById("quizTopicInput").value.trim();
   if (!topic) { alert("Please enter a topic for the quiz"); return; }
-  window.location.href = `/quiz.html?topic=${encodeURIComponent(topic)}`;
+  const count = document.getElementById('quizCount').value;
+  window.location.href = `/quiz.html?topic=${encodeURIComponent(topic)}&count=${count}`;
 });
 
 async function loadQuizHistory() {
@@ -456,9 +490,14 @@ async function loadQuizHistory() {
   } catch { console.log("Failed to load quiz history"); }
 }
 
-async function loadQuizCharts() {
+let _activeFilter = 'all';
+
+async function loadQuizCharts(filterTopic = _activeFilter) {
+  _activeFilter = filterTopic;
   try {
-    const res = await fetch("/api/ai/quiz/history", { headers: { Authorization: "Bearer " + localStorage.getItem("token") } });
+    const res = await fetch("/api/ai/quiz/history", {
+      headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+    });
     const data = await res.json();
     const scored = data.filter(d => d.score !== null && d.total > 0);
     if (!scored.length) return;
@@ -466,13 +505,30 @@ async function loadQuizCharts() {
     const palette = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
     const topicColors = {};
     let ci = 0;
-    scored.forEach(d => { if (!topicColors[d.topic]) topicColors[d.topic] = palette[ci++ % palette.length]; });
+    scored.forEach(d => {
+      if (!topicColors[d.topic]) topicColors[d.topic] = palette[ci++ % palette.length];
+    });
 
+    // build topic filter buttons
+    const filterDiv = document.getElementById('topicFilters');
+    const topics = Object.keys(topicColors);
+    filterDiv.innerHTML = ['all', ...topics].map(t =>
+      `<button onclick="loadQuizCharts('${t}')"
+        style="font-size:12px;padding:4px 12px;border-radius:20px;cursor:pointer;
+               border:1px solid ${t===filterTopic?'#2563eb':'#d1d5db'};
+               background:${t===filterTopic?'#2563eb':'white'};
+               color:${t===filterTopic?'white':'#6b7280'}">
+        ${t === 'all' ? 'All topics' : t}
+      </button>`
+    ).join('');
+
+    // filter rows
     const counts = {};
-    const rows = scored.map(d => {
+    const allRows = scored.map(d => {
       counts[d.topic] = (counts[d.topic] || 0) + 1;
       return { label: d.topic + ' #' + counts[d.topic], pct: Math.round((d.score / d.total) * 100), topic: d.topic };
     });
+    const rows = filterTopic === 'all' ? allRows : allRows.filter(r => r.topic === filterTopic);
 
     const pcts = rows.map(r => r.pct);
     const avg  = Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length);
@@ -480,76 +536,115 @@ async function loadQuizCharts() {
     const bestTopic  = rows.find(r => r.pct === best)?.topic || '';
     const topicCount = Object.keys(topicColors).length;
 
-    document.getElementById('statAvg').textContent    = avg + '%';
-    document.getElementById('statAvgSub').textContent = 'across ' + scored.length + ' quizzes';
-    document.getElementById('statBest').textContent   = best + '%';
+    document.getElementById('statAvg').textContent     = avg + '%';
+    document.getElementById('statAvgSub').textContent  = 'across ' + scored.length + ' quizzes';
+    document.getElementById('statBest').textContent    = best + '%';
     document.getElementById('statBestSub').textContent = bestTopic;
-    document.getElementById('statCount').textContent  = scored.length;
-    document.getElementById('statTopics').textContent = topicCount + ' topic' + (topicCount !== 1 ? 's' : '');
+    document.getElementById('statCount').textContent   = scored.length;
+    document.getElementById('statTopics').textContent  = topicCount + ' topic' + (topicCount !== 1 ? 's' : '');
 
-    const topics = Object.keys(topicColors);
-
-    const lineDatasets = topics.map(t => ({
-      label: t,
-      data: rows.map(r => r.topic === t ? r.pct : null),
-      borderColor: topicColors[t], backgroundColor: topicColors[t],
-      spanGaps: false, tension: 0.35, pointRadius: 5, pointHoverRadius: 7, borderWidth: 2.5
-    }));
-    lineDatasets.push({
-      label: 'average', data: rows.map(() => avg),
-      borderColor: '#d1d5db', borderDash: [5, 4], borderWidth: 2,
-      pointRadius: 0, tension: 0, backgroundColor: 'transparent'
+    // rolling average
+    const rolling = rows.map((_, i) => {
+      const slice = rows.slice(Math.max(0, i - 4), i + 1);
+      return Math.round(slice.reduce((s, r) => s + r.pct, 0) / slice.length);
     });
 
     if (window._lineChart) window._lineChart.destroy();
     window._lineChart = new Chart(document.getElementById('quizLineChart'), {
       type: 'line',
-      data: { labels: rows.map(r => r.label), datasets: lineDatasets },
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [
+          {
+            label: 'each quiz',
+            data: rows.map(r => r.pct),
+            borderColor: 'rgba(37,99,235,0.25)',
+            backgroundColor: 'transparent',
+            pointBackgroundColor: rows.map(r => topicColors[r.topic]),
+            pointRadius: 4,
+            borderWidth: 1,
+            tension: 0.3,
+            fill: false
+          },
+          {
+            label: 'rolling avg',
+            data: rolling,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37,99,235,0.06)',
+            pointRadius: 0,
+            borderWidth: 2.5,
+            tension: 0.5,
+            fill: true
+          }
+        ]
+      },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%' } }
+          tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y + '%' } }
         },
         scales: {
           y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' }, border: { display: false } },
-          x: { ticks: { font: { size: 10 }, color: '#9ca3af', maxRotation: 20 }, grid: { display: false }, border: { display: false } }
+          x: { ticks: { font: { size: 10 }, color: '#9ca3af', maxTicksLimit: 10, maxRotation: 20 }, grid: { display: false }, border: { display: false } }
         }
       }
     });
 
-    const legend = document.getElementById('lineChartLegend');
-    legend.innerHTML = '';
-    [...topics, 'average'].forEach(t => {
-      const color = t === 'average' ? '#d1d5db' : topicColors[t];
-      const el = document.createElement('span');
-      el.style.cssText = 'display:flex;align-items:center;gap:4px;';
-      el.innerHTML = `<span style="width:9px;height:9px;border-radius:2px;background:${color};display:inline-block;"></span>${t}`;
-      legend.appendChild(el);
-    });
+    document.getElementById('lineChartLegend').innerHTML = `
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:rgba(37,99,235,0.3);display:inline-block;"></span>each quiz</span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:9px;height:9px;border-radius:2px;background:#2563eb;display:inline-block;"></span>rolling avg</span>
+    `;
 
-    const buckets = {};
-    rows.forEach(r => { buckets[r.pct] = (buckets[r.pct] || 0) + 1; });
-    const bScores = Object.keys(buckets).map(Number).sort((a, b) => a - b);
+    // distribution donut
+    const under50 = rows.filter(r => r.pct < 50).length;
+    const mid     = rows.filter(r => r.pct >= 50 && r.pct < 80).length;
+    const high    = rows.filter(r => r.pct >= 80).length;
 
     if (window._distChart) window._distChart.destroy();
     window._distChart = new Chart(document.getElementById('quizDistChart'), {
-      type: 'bar',
+      type: 'doughnut',
       data: {
-        labels: bScores.map(s => s + '%'),
-        datasets: [{
-          data: bScores.map(s => buckets[s]),
-          backgroundColor: bScores.map(s => s >= 80 ? '#10b981' : s >= 50 ? '#2563eb' : '#ef4444'),
-          borderRadius: 6,
-          borderSkipped: false
-        }]
+        labels: ['Under 50%', '50–79%', '80%+'],
+        datasets: [{ data: [under50, mid, high], backgroundColor: ['#ef4444','#2563eb','#10b981'], borderWidth: 0, hoverOffset: 4 }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        cutout: '62%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + c.label + ': ' + c.raw + ' quiz' + (c.raw !== 1 ? 'zes' : '') } } }
+      }
+    });
+
+    // topic averages bar
+    const topicMap = {};
+    scored.forEach(d => {
+      if (!topicMap[d.topic]) topicMap[d.topic] = { total: 0, count: 0 };
+      topicMap[d.topic].total += Math.round((d.score / d.total) * 100);
+      topicMap[d.topic].count += 1;
+    });
+    const topicAvgs = Object.entries(topicMap)
+      .map(([t, v]) => ({ topic: t, avg: Math.round(v.total / v.count) }))
+      .sort((a, b) => b.avg - a.avg);
+
+    if (window._barChart) window._barChart.destroy();
+    window._barChart = new Chart(document.getElementById('quizTopicBar'), {
+      type: 'bar',
+      data: {
+        labels: topicAvgs.map(t => t.topic),
+        datasets: [{
+          data: topicAvgs.map(t => t.avg),
+          backgroundColor: topicAvgs.map(t => t.avg >= 80 ? '#10b981' : t.avg >= 50 ? '#2563eb' : '#ef4444'),
+          borderRadius: 4,
+          barThickness: 20
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' avg: ' + c.parsed.x + '%' } } },
         scales: {
-          y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' }, border: { display: false } },
-          x: { ticks: { font: { size: 11 }, color: '#9ca3af' }, grid: { display: false }, border: { display: false } }
+          x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' }, border: { display: false } },
+          y: { ticks: { font: { size: 11 }, color: '#374151' }, grid: { display: false }, border: { display: false } }
         }
       }
     });

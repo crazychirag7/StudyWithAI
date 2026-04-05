@@ -170,7 +170,7 @@ async function loadQuiz() {
         "Content-Type": "application/json",
         Authorization: "Bearer " + token
       },
-      body: JSON.stringify({ topic })
+      body: JSON.stringify({ topic, count: parseInt(urlParams.get("count")) || 5 })
     });
 
     const data = await res.json();
