@@ -20,7 +20,12 @@ router.post("/signup", async (req, res) => {
         const newUser = new User({ username, email, password });
         await newUser.save();
 
-        res.status(201).json({ message: "User created successfully" });
+        const token = jwt.sign(
+            { id: newUser._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+        res.status(201).json({ token, username: newUser.username });
 
     } catch (err) {
         res.status(500).json({ message: "Server error" });

@@ -128,7 +128,7 @@ header {
 
   <div class="quiz-footer">
     <div id="progressText" class="progress"></div>
-    <button id="nextBtn" class="next-btn">Next Question</button>
+    <button id="nextBtn" class="next-btn">Check Answer</button>
   </div>
 </div>
 
@@ -216,24 +216,58 @@ function renderQuestion() {
   });
 }
 
+let answered = false;
+
 nextBtn.addEventListener("click", () => {
-  if (!selectedAnswer) {
-    alert("Please select an answer");
-    return;
-  }
+  if (!answered) {
+    if (!selectedAnswer) {
+      alert("Please select an answer");
+      return;
+    }
 
-  const correct = quizData[currentQuestion].correct;
+    const correct = quizData[currentQuestion].correct;
+    answered = true;
 
-  if (selectedAnswer === correct) {
-    score++;
-  }
+    document.querySelectorAll(".option").forEach(opt => {
+      const letter = opt.innerText.split(".")[0].trim();
+      if (letter === correct) {
+        opt.style.background = "#10b981";
+        opt.style.color = "white";
+      } else if (letter === selectedAnswer) {
+        opt.style.background = "#ef4444";
+        opt.style.color = "white";
+      }
+      opt.style.cursor = "default";
+      opt.style.pointerEvents = "none";
+    });
 
-  currentQuestion++;
+    const feedback = document.createElement("div");
+    feedback.style.cssText = "margin-top:16px;padding:12px 16px;border-radius:10px;font-size:15px;font-weight:600;";
 
-  if (currentQuestion < quizData.length) {
-    renderQuestion();
+    if (selectedAnswer === correct) {
+      score++;
+      feedback.style.background = "#d1fae5";
+      feedback.style.color = "#065f46";
+      feedback.innerText = "Correct! ✓";
+    } else {
+      const correctOption = quizData[currentQuestion].options[correct];
+      feedback.style.background = "#fee2e2";
+      feedback.style.color = "#991b1b";
+      feedback.innerText = `Wrong! The correct answer was ${correct}. ${correctOption}`;
+    }
+
+    document.getElementById("optionsContainer").appendChild(feedback);
+    nextBtn.innerText = currentQuestion + 1 < quizData.length ? "Next Question →" : "See Results";
+
   } else {
-    showResults();
+    answered = false;
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+      renderQuestion();
+      nextBtn.innerText = "Check Answer";
+    } else {
+      showResults();
+    }
   }
 });
 

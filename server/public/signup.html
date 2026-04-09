@@ -54,6 +54,8 @@
       const message = document.getElementById("message");
   
       if (res.ok) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("username", data.username);
         window.location.href = "/dashboard.html";
       } else {
         message.innerText = data.message;

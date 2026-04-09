@@ -199,7 +199,7 @@ header {
 
 <div class="container">
 
-  <div class="welcome">Welcome 👋</div>
+  <div class="welcome" id="welcomeMsg">Welcome 👋</div>
 
   <div class="card">
     <div style="width:60%;">
@@ -272,6 +272,28 @@ header {
     </div>
     <div class="dashboard-logo">
       <img src="/images/hero.png" alt="PDF Upload" />
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:60px;">
+    <div style="width:60%;">
+      <h2>Generate Notes</h2>
+      <p>Get AI-generated bullet point summary notes on any topic.</p>
+      <input id="notesTopicInput" type="text" placeholder="Enter a topic..." />
+      <button id="generateNotesBtn">Generate Notes</button>
+    </div>
+    <div class="dashboard-logo">
+      <img src="/images/hero.png" alt="Notes" />
+    </div>
+  </div>
+
+  <div id="notesOutput" style="display:none; margin:0 0 40px;">
+    <div style="background:white;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,0.05);padding:30px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h3 id="notesTitle" style="margin:0;font-size:18px;color:#111827;"></h3>
+        <button onclick="document.getElementById('notesOutput').style.display='none'" style="background:#e5e7eb;border:none;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Close</button>
+      </div>
+      <ul id="notesList" style="list-style:none;padding:0;margin:0;"></ul>
     </div>
   </div>
 
@@ -378,7 +400,11 @@ async function loadFlashcardHistory() {
   } catch (err) { console.log("Failed to load flashcard history"); }
 }
 
-function logout() { window.location.href = "/login.html"; }
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  window.location.href = "/login.html";
+}
 
 const generateBtn      = document.getElementById("generateBtn");
 const topicInput       = document.getElementById("topicInput");
@@ -390,7 +416,7 @@ let flashcards = [], currentIndex = 0, recentTopics = [];
 
 function renderRecentTopicsFromDB() {
   recentTopicsList.innerHTML = "";
-  recentTopics.forEach(item => {
+  recentTopics.slice(0, 5).forEach(item => {
     const li = document.createElement("li");
     li.innerText = item.topic;
     li.addEventListener("click", () => {
@@ -737,6 +763,42 @@ document.getElementById("pdfQuizBtn").addEventListener("click", async () => {
   btn.disabled = false;
   btn.innerText = "Quiz from PDF";
 });
+
+document.getElementById("generateNotesBtn").addEventListener("click", async () => {
+  const topic = document.getElementById("notesTopicInput").value.trim();
+  if (!topic) { alert("Please enter a topic"); return; }
+  const btn = document.getElementById("generateNotesBtn");
+  btn.disabled = true;
+  btn.innerText = "Generating...";
+  try {
+    const res = await fetch("/api/ai/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + localStorage.getItem("token") },
+      body: JSON.stringify({ topic })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById("notesTitle").innerText = "Notes: " + topic;
+      const list = document.getElementById("notesList");
+      list.innerHTML = "";
+      data.notes.forEach(note => {
+        const li = document.createElement("li");
+        li.style.cssText = "padding:10px 14px;border-radius:8px;margin-bottom:8px;background:#f8faff;border-left:3px solid #2563eb;font-size:15px;color:#374151;line-height:1.5;";
+        li.innerText = "• " + note;
+        list.appendChild(li);
+      });
+      document.getElementById("notesOutput").style.display = "block";
+      document.getElementById("notesOutput").scrollIntoView({ behavior: "smooth" });
+    } else {
+      alert("Failed to generate notes");
+    }
+  } catch { alert("Something went wrong"); }
+  btn.disabled = false;
+  btn.innerText = "Generate Notes";
+});
+
+const username = localStorage.getItem("username");
+if (username) document.getElementById("welcomeMsg").innerText = `Welcome back, ${username}! 👋`;
 
 loadFlashcardHistory();
 loadQuizHistory();

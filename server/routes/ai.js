@@ -287,5 +287,34 @@ router.post("/pdf/quiz", authMiddleware, upload.single("pdf"), async (req, res) 
   }
 });
 
+router.post("/notes", authMiddleware, async (req, res) => {
+  try {
+    const { topic } = req.body;
+    if (!topic) return res.status(400).json({ message: "Topic is required" });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: `Generate concise study notes about ${topic}.
+
+Return ONLY a JSON array of bullet points like this:
+[
+  "Key point 1",
+  "Key point 2",
+  "Key point 3"
+]
+
+Make 10 clear, concise bullet points. Return ONLY valid JSON.` }],
+      max_tokens: 800
+    });
+
+    const cleaned = completion.choices[0].message.content.replace(/```json|```/g, "").trim();
+    const notes = JSON.parse(cleaned);
+    res.json({ notes, topic });
+  } catch (err) {
+    console.log("Notes error:", err);
+    res.status(500).json({ message: "Failed to generate notes" });
+  }
+});
+
 
 module.exports = router;
