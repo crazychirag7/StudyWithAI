@@ -77,6 +77,11 @@ header {
   cursor: pointer;
 }
 
+.card button:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
 .section-title {
   font-size: 20px;
   font-weight: bold;
@@ -174,10 +179,14 @@ header {
 .flashcard-slide-right { transform: translateX(20px);  opacity: 0; }
 
 .dashboard-logo img { width: 260px; height: auto; }
+.card-icon { width: 80px; height: 80px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; }
 
 .quiz-card button       { background: #111827; }
 .quiz-card button:hover { background: #000; }
-.quiz-card              { margin-top: 60px; }
+.quiz-card              { margin-top: 60px; border-left: 4px solid #111827; }
+.flashcard-card-border  { border-left: 4px solid #2563eb; }
+.pdf-card-border        { border-left: 4px solid #f59e0b; }
+.notes-card-border      { border-left: 4px solid #10b981; }
 
 .stat-card            { background: white; border-radius: 12px; padding: 18px 20px; flex: 1; }
 .stat-card .lbl       { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
@@ -187,21 +196,55 @@ header {
 .chart-panel          { background: white; border-radius: 12px; padding: 20px; flex: 1; min-width: 0; }
 .chart-panel .ctitle  { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 2px; }
 .chart-panel .csub    { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
+
+body.dark { background-color: #0f172a; color: #e2e8f0; }
+body.dark header { background: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+body.dark .logo { color: #60a5fa; }
+body.dark .card { background: #1e293b; color: #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+body.dark .flashcard-box { background: #1e293b; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+body.dark .stat-card { background: #1e293b; color: #e2e8f0; }
+body.dark .chart-panel { background: #1e293b; color: #e2e8f0; }
+body.dark .chart-panel .ctitle { color: #e2e8f0; }
+body.dark .logout-btn { background: #334155; color: #e2e8f0; }
+body.dark #darkModeBtn { background: #334155; color: #e2e8f0; }
+body.dark input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+body.dark select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+body.dark #recentTopics li { background: #0f172a; color: #e2e8f0; }
+body.dark #recentTopics li:hover { background: #2563eb; }
+body.dark .flip-front { background: #1e293b; border-color: #3b82f6; }
+body.dark .flip-back { background: #134e4a; border-color: #34d399; }
+body.dark .section-title { color: #e2e8f0; }
+body.dark .welcome { color: #f1f5f9; }
+body.dark .card-icon { opacity: 0.9; }
+body.dark p { color: #94a3b8; }
+body.dark h2 { color: #f1f5f9; }
+body.dark h3 { color: #f1f5f9; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">StudyWithAI</div>
-  <button class="logout-btn" onclick="logout()">Logout</button>
-</header>
+  <header>
+    <div class="logo">StudyWithAI</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button id="darkModeBtn" onclick="toggleDarkMode()" style="background:#e5e7eb;border:none;padding:8px 16px;border-radius:20px;cursor:pointer;">🌙 Dark</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
 <div class="container">
 
-  <div class="welcome" id="welcomeMsg">Welcome 👋</div>
-
-  <div class="card">
+  <div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-radius:16px;padding:30px 35px;margin-bottom:40px;">
+    <div class="welcome" id="welcomeMsg" style="margin-bottom:6px;">Welcome 👋</div>
+    <p style="margin:0;color:#6b7280;font-size:16px;">What would you like to study today?</p>
+  </div>
+  
+  <div class="card flashcard-card-border">
     <div style="width:60%;">
       <h2>Generate Flashcards</h2>
       <p>Create custom flashcards powered by AI to help you study any topic.</p>
@@ -215,9 +258,7 @@ header {
         <button id="generateBtn" style="flex:1;">Generate Flashcards</button>
       </div>
     </div>
-    <div class="dashboard-logo">
-      <img src="/images/hero.png" alt="StudyWithAI Logo" />
-    </div>
+    <div class="card-icon" style="background:#eff6ff;">📚</div>
   </div>
 
   <div class="section-title">AI Generated Flashcards</div>
@@ -254,7 +295,7 @@ header {
     </div>
   </div>
 
-  <div class="card" style="margin-top:60px;">
+  <div class="card pdf-card-border" style="margin-top:60px;">
     <div style="width:60%;">
       <h2>Upload PDF</h2>
       <p>Upload a PDF and let AI generate flashcards or a quiz from it.</p>
@@ -270,21 +311,17 @@ header {
       </div>
       <div id="pdfStatus" style="margin-top:12px;font-size:13px;color:#6b7280;"></div>
     </div>
-    <div class="dashboard-logo">
-      <img src="/images/hero.png" alt="PDF Upload" />
-    </div>
+    <div class="card-icon" style="background:#f0fdf4;">📄</div>
   </div>
 
-  <div class="card" style="margin-top:60px;">
+  <div class="card notes-card-border" style="margin-top:60px;">
     <div style="width:60%;">
       <h2>Generate Notes</h2>
       <p>Get AI-generated bullet point summary notes on any topic.</p>
       <input id="notesTopicInput" type="text" placeholder="Enter a topic..." />
-      <button id="generateNotesBtn">Generate Notes</button>
+      <button id="generateNotesBtn" style="width:100%;margin-top:0;">Generate Notes</button>
     </div>
-    <div class="dashboard-logo">
-      <img src="/images/hero.png" alt="Notes" />
-    </div>
+    <div class="card-icon" style="background:#fefce8;">📝</div>
   </div>
 
   <div id="notesOutput" style="display:none; margin:0 0 40px;">
@@ -311,9 +348,7 @@ header {
         <button id="startQuizBtn" style="flex:1;">Start Quiz</button>
       </div>
     </div>
-    <div class="dashboard-logo">
-      <img src="/images/hero.png" alt="Quiz Image" />
-    </div>
+    <div class="card-icon" style="background:#faf5ff;">🧠</div>
   </div>
 
 </div>
@@ -466,7 +501,7 @@ generateBtn.addEventListener("click", async () => {
   const topic = topicInput.value.trim();
   if (!topic) { alert("Please enter a topic"); return; }
   generateBtn.disabled = true;
-  generateBtn.innerText = "Generating...";
+  generateBtn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>Generating...</div>';
   try {
     const res = await fetch("/api/ai/flashcards", {
       method: "POST",
@@ -480,7 +515,7 @@ generateBtn.addEventListener("click", async () => {
     } else { console.log("AI Error"); }
   } catch { console.log("Failed to connect to AI."); }
   generateBtn.disabled = false;
-  generateBtn.innerText = "Generate Flashcards";
+  generateBtn.innerHTML = "Generate Flashcards";
 });
 
 async function deleteFlashcard(id) {
@@ -549,6 +584,9 @@ async function loadQuizCharts(filterTopic = _activeFilter) {
     const scored = data.filter(d => d.score !== null && d.total > 0);
     if (!scored.length) return;
 
+    const isDark = document.body.classList.contains("dark");
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6';
+    const tickColor = isDark ? '#64748b' : '#9ca3af';
     const palette = ['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
     const topicColors = {};
     let ci = 0;
@@ -632,8 +670,8 @@ async function loadQuizCharts(filterTopic = _activeFilter) {
           tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed.y + '%' } }
         },
         scales: {
-          y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' }, border: { display: false } },
-          x: { ticks: { font: { size: 10 }, color: '#9ca3af', maxTicksLimit: 10, maxRotation: 20 }, grid: { display: false }, border: { display: false } }
+          y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: tickColor }, grid: { color: gridColor }, border: { display: false } },
+          x: { ticks: { font: { size: 10 }, color: tickColor, maxTicksLimit: 10, maxRotation: 20 }, grid: { display: false }, border: { display: false } }
         }
       }
     });
@@ -690,8 +728,8 @@ async function loadQuizCharts(filterTopic = _activeFilter) {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' avg: ' + c.parsed.x + '%' } } },
         scales: {
-          x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: '#9ca3af' }, grid: { color: '#f3f4f6' }, border: { display: false } },
-          y: { ticks: { font: { size: 11 }, color: '#374151' }, grid: { display: false }, border: { display: false } }
+          x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 }, color: tickColor }, grid: { color: gridColor }, border: { display: false } },
+          y: { ticks: { font: { size: 11 }, color: tickColor }, grid: { display: false }, border: { display: false } }
         }
       }
     });
@@ -706,7 +744,7 @@ document.getElementById("pdfFlashcardBtn").addEventListener("click", async () =>
   const status = document.getElementById("pdfStatus");
   const btn = document.getElementById("pdfFlashcardBtn");
   btn.disabled = true;
-  btn.innerText = "Generating...";
+  btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>Generating...</div>';
   status.innerText = "Reading your PDF...";
   try {
     const formData = new FormData();
@@ -739,7 +777,7 @@ document.getElementById("pdfQuizBtn").addEventListener("click", async () => {
   const status = document.getElementById("pdfStatus");
   const btn = document.getElementById("pdfQuizBtn");
   btn.disabled = true;
-  btn.innerText = "Generating...";
+  btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>Generating...</div>';
   status.innerText = "Reading your PDF...";
   try {
     const formData = new FormData();
@@ -769,7 +807,7 @@ document.getElementById("generateNotesBtn").addEventListener("click", async () =
   if (!topic) { alert("Please enter a topic"); return; }
   const btn = document.getElementById("generateNotesBtn");
   btn.disabled = true;
-  btn.innerText = "Generating...";
+  btn.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0;"></div>Generating...</div>';
   try {
     const res = await fetch("/api/ai/notes", {
       method: "POST",
@@ -794,11 +832,25 @@ document.getElementById("generateNotesBtn").addEventListener("click", async () =
     }
   } catch { alert("Something went wrong"); }
   btn.disabled = false;
-  btn.innerText = "Generate Notes";
+  btn.innerHTML = "Generate Notes";
 });
 
 const username = localStorage.getItem("username");
 if (username) document.getElementById("welcomeMsg").innerText = `Welcome back, ${username}! 👋`;
+
+function toggleDarkMode() {
+  document.body.classList.toggle("dark");
+  const btn = document.getElementById("darkModeBtn");
+  const isDark = document.body.classList.contains("dark");
+  btn.innerText = isDark ? "☀️ Light" : "🌙 Dark";
+  localStorage.setItem("darkMode", isDark);
+  loadQuizCharts();
+}
+
+if (localStorage.getItem("darkMode") === "true") {
+  document.body.classList.add("dark");
+  document.getElementById("darkModeBtn").innerText = "☀️ Light";
+}
 
 loadFlashcardHistory();
 loadQuizHistory();
