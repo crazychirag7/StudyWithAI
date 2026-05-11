@@ -23,6 +23,10 @@ header {
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+body.dark .welcome {
+  color: #ffffff !important;
+}
+
 .logo {
   font-size: 22px;
   font-weight: bold;
@@ -117,6 +121,7 @@ header {
   cursor: pointer;
   background: #f1f5f9;
   transition: 0.2s;
+  color: #111827;
 }
 
 #recentTopics li:hover {
@@ -136,12 +141,22 @@ header {
   background: white;
 }
 
+.subtitle {
+  margin: 0;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+body.dark .subtitle {
+  color: #cbd5e1;
+}
+
 .flip-scene { width:100%; flex:1; perspective:1000px; cursor:pointer; padding:20px; box-sizing:border-box; }
 .flip-card-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.55s cubic-bezier(.4,0,.2,1); }
 .flip-card-inner.flipped { transform:rotateY(180deg); }
 .flip-face { position:absolute; width:100%; height:100%; backface-visibility:hidden; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; box-sizing:border-box; }
-.flip-front { background:white; border:2px solid #e0e7ff; }
-.flip-back  { background:#f0fdf4; border:2px solid #bbf7d0; transform:rotateY(180deg); }
+.flip-front { background:white; border:2px solid #e0e7ff; color: #111827; }
+.flip-back  { background:#f0fdf4; border:2px solid #bbf7d0; transform:rotateY(180deg); color: #166534; }
 
 #cardCounter {
   text-align: center;
@@ -188,37 +203,67 @@ header {
 .pdf-card-border        { border-left: 4px solid #f59e0b; }
 .notes-card-border      { border-left: 4px solid #10b981; }
 
-.stat-card            { background: white; border-radius: 12px; padding: 18px 20px; flex: 1; }
+.stat-card            { background: white; border-radius: 12px; padding: 18px 20px; flex: 1; color: #111827; }
 .stat-card .lbl       { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
 .stat-card .val       { font-size: 28px; font-weight: 700; color: #111827; }
 .stat-card .sub       { font-size: 12px; margin-top: 4px; }
 
-.chart-panel          { background: white; border-radius: 12px; padding: 20px; flex: 1; min-width: 0; }
+.chart-panel          { background: white; border-radius: 12px; padding: 20px; flex: 1; min-width: 0; color: #111827; }
 .chart-panel .ctitle  { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 2px; }
 .chart-panel .csub    { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
 
+/* DARK MODE STYLES */
 body.dark { background-color: #0f172a; color: #e2e8f0; }
+
 body.dark header { background: #1e293b; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+
 body.dark .logo { color: #60a5fa; }
+
 body.dark .card { background: #1e293b; color: #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+body.dark .card h2 { color: #e2e8f0; }
+body.dark .card p { color: #cbd5e1; }
+
 body.dark .flashcard-box { background: #1e293b; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+
 body.dark .stat-card { background: #1e293b; color: #e2e8f0; }
+body.dark .stat-card .lbl { color: #94a3b8; }
+body.dark .stat-card .val { color: #e2e8f0; }
+
 body.dark .chart-panel { background: #1e293b; color: #e2e8f0; }
 body.dark .chart-panel .ctitle { color: #e2e8f0; }
+body.dark .chart-panel .csub { color: #94a3b8; }
+
 body.dark .logout-btn { background: #334155; color: #e2e8f0; }
+
 body.dark #darkModeBtn { background: #334155; color: #e2e8f0; }
+
 body.dark input { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+
 body.dark select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
-body.dark #recentTopics li { background: #0f172a; color: #e2e8f0; }
-body.dark #recentTopics li:hover { background: #2563eb; }
-body.dark .flip-front { background: #1e293b; border-color: #3b82f6; }
-body.dark .flip-back { background: #134e4a; border-color: #34d399; }
+
+body.dark #recentTopics li { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+body.dark #recentTopics li:hover { background: #2563eb; color: white; }
+
+body.dark .flip-front { background: #1e293b; border-color: #3b82f6; color: #e2e8f0; }
+body.dark .flip-back { background: #134e4a; border-color: #34d399; color: #d1fae5; }
+
 body.dark .section-title { color: #e2e8f0; }
-body.dark .welcome { color: #f1f5f9; }
+
+body.dark .welcome { color: #111827 !important; }
+
 body.dark .card-icon { opacity: 0.9; }
+
 body.dark p { color: #94a3b8; }
+
 body.dark h2 { color: #f1f5f9; }
+
 body.dark h3 { color: #f1f5f9; }
+
+body.dark #cardCounter { background: #0f172a; color: #94a3b8; }
+
+body.dark #pdfStatus { color: #cbd5e1; }
+
+body.dark #emptyState { color: #94a3b8; }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -241,7 +286,7 @@ body.dark h3 { color: #f1f5f9; }
 
   <div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border-radius:16px;padding:30px 35px;margin-bottom:40px;">
     <div class="welcome" id="welcomeMsg" style="margin-bottom:6px;">Welcome 👋</div>
-    <p style="margin:0;color:#6b7280;font-size:16px;">What would you like to study today?</p>
+    <p class="subtitle">What would you like to study today?</p>
   </div>
   
   <div class="card flashcard-card-border">
@@ -540,7 +585,7 @@ async function loadQuizHistory() {
 
     data.forEach(item => {
       const li = document.createElement("li");
-      li.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:10px;background:#f1f5f9;";
+      li.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:10px;background:#f1f5f9;color:#111827;";
 
       const now = new Date(), date = new Date(item.createdAt);
       const diff = Math.floor((now - date) / 1000);
